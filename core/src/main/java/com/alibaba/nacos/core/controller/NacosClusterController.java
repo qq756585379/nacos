@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.alibaba.nacos.core.controller;
 
@@ -46,38 +31,26 @@ import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Cluster communication interface.
- *
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
- */
 @RestController
 @RequestMapping(Commons.NACOS_CORE_CONTEXT + "/cluster")
 public class NacosClusterController {
-    
+
     private final ServerMemberManager memberManager;
-    
+
     public NacosClusterController(ServerMemberManager memberManager) {
         this.memberManager = memberManager;
     }
-    
+
     @GetMapping(value = "/self")
     public RestResult<Member> self() {
         return RestResultUtils.success(memberManager.getSelf());
     }
-    
-    /**
-     * The console displays the list of cluster members.
-     *
-     * @param ipKeyWord search keyWord
-     * @return all members
-     */
+
     @GetMapping(value = "/nodes")
-    public RestResult<Collection<Member>> listNodes(
-            @RequestParam(value = "keyword", required = false) String ipKeyWord) {
+    public RestResult<Collection<Member>> listNodes(@RequestParam(value = "keyword", required = false) String ipKeyWord) {
         Collection<Member> members = memberManager.allMembers();
         Collection<Member> result = new ArrayList<>();
-        
+
         members.stream().sorted().forEach(member -> {
             if (StringUtils.isBlank(ipKeyWord)) {
                 result.add(member);
@@ -88,29 +61,23 @@ public class NacosClusterController {
                 result.add(member);
             }
         });
-        
+
         return RestResultUtils.success(result);
     }
-    
+
     // The client can get all the nacos node information in the current
     // cluster according to this interface
-    
+
     @GetMapping(value = "/simple/nodes")
     public RestResult<Collection<String>> listSimpleNodes() {
         return RestResultUtils.success(memberManager.getMemberAddressInfos());
     }
-    
+
     @GetMapping("/health")
     public RestResult<String> getHealth() {
         return RestResultUtils.success(memberManager.getSelf().getState().name());
     }
-    
-    /**
-     * Other nodes return their own metadata information.
-     *
-     * @param node {@link Member}
-     * @return {@link RestResult}
-     */
+
     @PostMapping(value = {"/report"})
     public RestResult<String> report(@RequestBody Member node) {
         if (!node.check()) {
@@ -119,18 +86,11 @@ public class NacosClusterController {
         LoggerUtils.printIfDebugEnabled(Loggers.CLUSTER, "node state report, receive info : {}", node);
         node.setState(NodeState.UP);
         node.setFailAccessCnt(0);
-        
+
         boolean result = memberManager.update(node);
-        
         return RestResultUtils.success(Boolean.toString(result));
     }
-    
-    /**
-     * Addressing mode switch.
-     *
-     * @param type member-lookup name
-     * @return {@link RestResult}
-     */
+
     @PostMapping(value = "/switch/lookup")
     public RestResult<String> switchLookup(@RequestParam(name = "type") String type) {
         try {
@@ -140,14 +100,7 @@ public class NacosClusterController {
             return RestResultUtils.failed(ex.getMessage());
         }
     }
-    
-    /**
-     * member leave.
-     *
-     * @param params member ip list, example [ip1:port1,ip2:port2,...]
-     * @return {@link RestResult}
-     * @throws Exception {@link Exception}
-     */
+
     @PostMapping("/server/leave")
     public RestResult<String> leave(@RequestBody Collection<String> params) throws Exception {
         Collection<Member> memberList = MemberUtils.multiParse(params);
@@ -159,28 +112,23 @@ public class NacosClusterController {
         notifyList.removeAll(memberList);
         CountDownLatch latch = new CountDownLatch(notifyList.size());
         for (Member member : notifyList) {
-            final String url = HttpUtils
-                    .buildUrl(false, member.getAddress(), ApplicationUtils.getContextPath(), Commons.NACOS_CORE_CONTEXT,
-                            "/cluster/server/leave");
+            final String url = HttpUtils.buildUrl(false, member.getAddress(), ApplicationUtils.getContextPath(), Commons.NACOS_CORE_CONTEXT, "/cluster/server/leave");
             asyncHttpClient.post(url, Header.EMPTY, Query.EMPTY, params, genericType.getType(), new Callback<String>() {
                 @Override
                 public void onReceive(RestResult<String> result) {
                     try {
                         if (result.ok()) {
-                            LoggerUtils.printIfDebugEnabled(Loggers.CLUSTER,
-                                    "The node : [{}] success to process the request", member);
+                            LoggerUtils.printIfDebugEnabled(Loggers.CLUSTER, "The node : [{}] success to process the request", member);
                             MemberUtils.onSuccess(member);
                         } else {
-                            Loggers.CLUSTER
-                                    .warn("The node : [{}] failed to process the request, response is : {}", member,
-                                            result);
+                            Loggers.CLUSTER.warn("The node : [{}] failed to process the request, response is : {}", member, result);
                             MemberUtils.onFail(member);
                         }
                     } finally {
                         latch.countDown();
                     }
                 }
-                
+
                 @Override
                 public void onError(Throwable throwable) {
                     try {
@@ -190,14 +138,14 @@ public class NacosClusterController {
                         latch.countDown();
                     }
                 }
-    
+
                 @Override
                 public void onCancel() {
-        
+
                 }
             });
         }
-        
+
         try {
             latch.await(10_000, TimeUnit.MILLISECONDS);
             return RestResultUtils.success("ok");
@@ -205,5 +153,4 @@ public class NacosClusterController {
             return RestResultUtils.failed(ex.getMessage());
         }
     }
-    
 }

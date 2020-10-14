@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.alibaba.nacos.client.naming.cache;
 
@@ -29,34 +14,17 @@ import java.nio.charset.CharsetDecoder;
 
 import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
 
-/**
- * Concurrent Disk util.
- *
- * @author nkorange
- */
 public class ConcurrentDiskUtil {
-    
-    /**
-     * get file content.
-     *
-     * @param path        file path
-     * @param charsetName charsetName
-     * @return content
-     * @throws IOException IOException
-     */
+
+    private static final int RETRY_COUNT = 10;
+
+    private static final int SLEEP_BASETIME = 10;
+
     public static String getFileContent(String path, String charsetName) throws IOException {
         File file = new File(path);
         return getFileContent(file, charsetName);
     }
-    
-    /**
-     * get file content.
-     *
-     * @param file        file
-     * @param charsetName charsetName
-     * @return content
-     * @throws IOException IOException
-     */
+
     public static String getFileContent(File file, String charsetName) throws IOException {
         RandomAccessFile fis = null;
         FileLock rlock = null;
@@ -93,32 +61,13 @@ public class ConcurrentDiskUtil {
             }
         }
     }
-    
-    /**
-     * write file content.
-     *
-     * @param path        file path
-     * @param content     content
-     * @param charsetName charsetName
-     * @return whether write ok
-     * @throws IOException IOException
-     */
+
     public static Boolean writeFileContent(String path, String content, String charsetName) throws IOException {
         File file = new File(path);
         return writeFileContent(file, content, charsetName);
     }
-    
-    /**
-     * write file content.
-     *
-     * @param file        file
-     * @param content     content
-     * @param charsetName charsetName
-     * @return whether write ok
-     * @throws IOException IOException
-     */
-    public static Boolean writeFileContent(File file, String content, String charsetName) throws IOException {
-        
+
+    static Boolean writeFileContent(File file, String content, String charsetName) throws IOException {
         if (!file.exists() && !file.createNewFile()) {
             return false;
         }
@@ -142,7 +91,7 @@ public class ConcurrentDiskUtil {
                     NAMING_LOGGER.warn("write " + file.getName() + " conflict;retry time: " + i);
                 }
             } while (null == lock);
-            
+
             ByteBuffer sendBuffer = ByteBuffer.wrap(content.getBytes(charsetName));
             while (sendBuffer.hasRemaining()) {
                 channel.write(sendBuffer);
@@ -175,29 +124,18 @@ public class ConcurrentDiskUtil {
                     NAMING_LOGGER.warn("close wrong", e);
                 }
             }
-            
+
         }
         return true;
     }
-    
-    /**
-     * transfer ByteBuffer to String.
-     *
-     * @param buffer      buffer
-     * @param charsetName charsetName
-     * @return String
-     * @throws IOException IOException
-     */
-    public static String byteBufferToString(ByteBuffer buffer, String charsetName) throws IOException {
-        Charset charset = null;
-        CharsetDecoder decoder = null;
-        CharBuffer charBuffer = null;
-        charset = Charset.forName(charsetName);
-        decoder = charset.newDecoder();
-        charBuffer = decoder.decode(buffer.asReadOnlyBuffer());
+
+    private static String byteBufferToString(ByteBuffer buffer, String charsetName) throws IOException {
+        Charset charset = Charset.forName(charsetName);
+        CharsetDecoder decoder = charset.newDecoder();
+        CharBuffer charBuffer = decoder.decode(buffer.asReadOnlyBuffer());
         return charBuffer.toString();
     }
-    
+
     private static void sleep(int time) {
         try {
             Thread.sleep(time);
@@ -205,8 +143,4 @@ public class ConcurrentDiskUtil {
             NAMING_LOGGER.warn("sleep wrong", e);
         }
     }
-    
-    private static final int RETRY_COUNT = 10;
-    
-    private static final int SLEEP_BASETIME = 10;
 }

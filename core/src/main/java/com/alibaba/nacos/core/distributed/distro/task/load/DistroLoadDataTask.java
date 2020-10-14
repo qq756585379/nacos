@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.alibaba.nacos.core.distributed.distro.task.load;
 
@@ -31,32 +16,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Distro load data task.
- *
- * @author xiweng.yy
- */
 public class DistroLoadDataTask implements Runnable {
-    
+
     private final ServerMemberManager memberManager;
-    
+
     private final DistroComponentHolder distroComponentHolder;
-    
+
     private final DistroConfig distroConfig;
-    
+
     private final DistroCallback loadCallback;
-    
+
     private final Map<String, Boolean> loadCompletedMap;
-    
-    public DistroLoadDataTask(ServerMemberManager memberManager, DistroComponentHolder distroComponentHolder,
-            DistroConfig distroConfig, DistroCallback loadCallback) {
+
+    public DistroLoadDataTask(ServerMemberManager memberManager, DistroComponentHolder distroComponentHolder, DistroConfig distroConfig, DistroCallback loadCallback) {
         this.memberManager = memberManager;
         this.distroComponentHolder = distroComponentHolder;
         this.distroConfig = distroConfig;
         this.loadCallback = loadCallback;
         loadCompletedMap = new HashMap<>(1);
     }
-    
+
     @Override
     public void run() {
         try {
@@ -72,7 +51,7 @@ public class DistroLoadDataTask implements Runnable {
             Loggers.DISTRO.error("[DISTRO-INIT] load snapshot data failed. ", e);
         }
     }
-    
+
     private void load() throws Exception {
         while (memberManager.allMembersWithoutSelf().isEmpty()) {
             Loggers.DISTRO.info("[DISTRO-INIT] waiting server list init...");
@@ -88,13 +67,13 @@ public class DistroLoadDataTask implements Runnable {
             }
         }
     }
-    
+
     private boolean loadAllDataSnapshotFromRemote(String resourceType) {
         DistroTransportAgent transportAgent = distroComponentHolder.findTransportAgent(resourceType);
         DistroDataProcessor dataProcessor = distroComponentHolder.findDataProcessor(resourceType);
         if (null == transportAgent || null == dataProcessor) {
             Loggers.DISTRO.warn("[DISTRO-INIT] Can't find component for type {}, transportAgent: {}, dataProcessor: {}",
-                    resourceType, transportAgent, dataProcessor);
+                resourceType, transportAgent, dataProcessor);
             return false;
         }
         for (Member each : memberManager.allMembersWithoutSelf()) {
@@ -103,8 +82,8 @@ public class DistroLoadDataTask implements Runnable {
                 DistroData distroData = transportAgent.getDatumSnapshot(each.getAddress());
                 boolean result = dataProcessor.processSnapshot(distroData);
                 Loggers.DISTRO
-                        .info("[DISTRO-INIT] load snapshot {} from {} result: {}", resourceType, each.getAddress(),
-                                result);
+                    .info("[DISTRO-INIT] load snapshot {} from {} result: {}", resourceType, each.getAddress(),
+                        result);
                 if (result) {
                     return true;
                 }
@@ -114,7 +93,7 @@ public class DistroLoadDataTask implements Runnable {
         }
         return false;
     }
-    
+
     private boolean checkCompleted() {
         if (distroComponentHolder.getDataStorageTypes().size() != loadCompletedMap.size()) {
             return false;

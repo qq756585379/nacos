@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.alibaba.nacos.core.distributed;
 
@@ -41,37 +26,32 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * Conformance protocol management, responsible for managing the lifecycle of conformance protocols in Nacos.
- *
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
- */
 @SuppressWarnings("all")
 @Component(value = "ProtocolManager")
 @DependsOn("serverMemberManager")
 public class ProtocolManager extends MemberChangeListener implements ApplicationListener<ContextStartedEvent>, DisposableBean {
-    
+
     private CPProtocol cpProtocol;
-    
+
     private APProtocol apProtocol;
-    
+
     @Autowired
     private ServerMemberManager memberManager;
-    
+
     private boolean apInit = false;
-    
+
     private boolean cpInit = false;
-    
+
     private Set<Member> oldMembers;
-    
+
     private static Set<String> toAPMembersInfo(Collection<Member> members) {
         Set<String> nodes = new HashSet<>();
         members.forEach(member -> nodes.add(member.getAddress()));
         return nodes;
     }
-    
+
     // delay init protocol
-    
+
     private static Set<String> toCPMembersInfo(Collection<Member> members) {
         Set<String> nodes = new HashSet<>();
         members.forEach(member -> {
@@ -81,13 +61,13 @@ public class ProtocolManager extends MemberChangeListener implements Application
         });
         return nodes;
     }
-    
+
     @PostConstruct
     public void init() {
         this.memberManager = memberManager;
         NotifyCenter.registerSubscriber(this);
     }
-    
+
     public CPProtocol getCpProtocol() {
         synchronized (this) {
             if (!cpInit) {
@@ -97,7 +77,7 @@ public class ProtocolManager extends MemberChangeListener implements Application
         }
         return cpProtocol;
     }
-    
+
     public APProtocol getApProtocol() {
         synchronized (this) {
             if (!apInit) {
@@ -107,7 +87,7 @@ public class ProtocolManager extends MemberChangeListener implements Application
         }
         return apProtocol;
     }
-    
+
     public void destroy() {
         if (Objects.nonNull(apProtocol)) {
             apProtocol.shutdown();
@@ -116,11 +96,11 @@ public class ProtocolManager extends MemberChangeListener implements Application
             cpProtocol.shutdown();
         }
     }
-    
+
     @Override
     public void onApplicationEvent(ContextStartedEvent event) {
     }
-    
+
     private void initAPProtocol() {
         ApplicationUtils.getBeanIfExist(APProtocol.class, protocol -> {
             Class configType = ClassUtils.resolveGenericType(protocol.getClass());
@@ -130,7 +110,7 @@ public class ProtocolManager extends MemberChangeListener implements Application
             ProtocolManager.this.apProtocol = protocol;
         });
     }
-    
+
     private void initCPProtocol() {
         ApplicationUtils.getBeanIfExist(CPProtocol.class, protocol -> {
             Class configType = ClassUtils.resolveGenericType(protocol.getClass());
@@ -140,7 +120,7 @@ public class ProtocolManager extends MemberChangeListener implements Application
             ProtocolManager.this.cpProtocol = protocol;
         });
     }
-    
+
     private void injectMembers4CP(Config config) {
         final Member selfMember = memberManager.getSelf();
         final String self = selfMember.getIp() + ":" + Integer
@@ -148,13 +128,13 @@ public class ProtocolManager extends MemberChangeListener implements Application
         Set<String> others = toCPMembersInfo(memberManager.allMembers());
         config.setMembers(self, others);
     }
-    
+
     private void injectMembers4AP(Config config) {
         final String self = memberManager.getSelf().getAddress();
         Set<String> others = toAPMembersInfo(memberManager.allMembers());
         config.setMembers(self, others);
     }
-    
+
     @Override
     public void onEvent(MembersChangeEvent event) {
         // Here, the sequence of node change events is very important. For example,
@@ -162,13 +142,13 @@ public class ProtocolManager extends MemberChangeListener implements Application
         // time T2 after a period of time.
         // (T1 < T2)
         Set<Member> copy = new HashSet<>(event.getMembers());
-    
+
         if (oldMembers == null) {
             oldMembers = new HashSet<>(copy);
         } else {
             oldMembers.removeAll(copy);
         }
-        
+
         if (!oldMembers.isEmpty()) {
             // Node change events between different protocols should not block each other.
             // and we use a single thread pool to inform the consistency layer of node changes,
@@ -181,7 +161,7 @@ public class ProtocolManager extends MemberChangeListener implements Application
                 ProtocolExecutor.cpMemberChange(() -> cpProtocol.memberChange(toCPMembersInfo(copy)));
             }
         }
-    
+
         // remove old members info
         oldMembers.clear();
         oldMembers.addAll(copy);

@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.alibaba.nacos.client.config.utils;
 
@@ -30,13 +15,8 @@ import java.nio.channels.FileLock;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
-/**
- * concurrent disk util;op file with file lock.
- *
- * @author configCenter
- */
 public class ConcurrentDiskUtil {
-    
+
     /**
      * get file content.
      *
@@ -49,7 +29,7 @@ public class ConcurrentDiskUtil {
         File file = new File(path);
         return getFileContent(file, charsetName);
     }
-    
+
     /**
      * get file content.
      *
@@ -94,30 +74,12 @@ public class ConcurrentDiskUtil {
             }
         }
     }
-    
-    /**
-     * write file content.
-     *
-     * @param path        file path
-     * @param content     content
-     * @param charsetName charsetName
-     * @return whether write ok
-     * @throws IOException IOException
-     */
+
     public static Boolean writeFileContent(String path, String content, String charsetName) throws IOException {
         File file = new File(path);
         return writeFileContent(file, content, charsetName);
     }
-    
-    /**
-     * write file content.
-     *
-     * @param file        file
-     * @param content     content
-     * @param charsetName charsetName
-     * @return whether write ok
-     * @throws IOException IOException
-     */
+
     public static Boolean writeFileContent(File file, String content, String charsetName) throws IOException {
         if (!file.exists()) {
             boolean isCreateOk = file.createNewFile();
@@ -145,7 +107,7 @@ public class ConcurrentDiskUtil {
                     LOGGER.warn("write {} conflict;retry time:{}", file.getName(), i);
                 }
             } while (null == lock);
-            
+
             ByteBuffer sendBuffer = ByteBuffer.wrap(content.getBytes(charsetName));
             while (sendBuffer.hasRemaining()) {
                 channel.write(sendBuffer);
@@ -178,19 +140,11 @@ public class ConcurrentDiskUtil {
                     LOGGER.warn("close wrong", e);
                 }
             }
-            
+
         }
         return true;
     }
-    
-    /**
-     * transfer ByteBuffer to String.
-     *
-     * @param buffer      buffer
-     * @param charsetName charsetName
-     * @return String
-     * @throws IOException IOException
-     */
+
     public static String byteBufferToString(ByteBuffer buffer, String charsetName) throws IOException {
         Charset charset = null;
         CharsetDecoder decoder = null;
@@ -200,7 +154,7 @@ public class ConcurrentDiskUtil {
         charBuffer = decoder.decode(buffer.asReadOnlyBuffer());
         return charBuffer.toString();
     }
-    
+
     private static void sleep(int time) {
         try {
             Thread.sleep(time);
@@ -208,11 +162,11 @@ public class ConcurrentDiskUtil {
             LOGGER.warn("sleep wrong", e);
         }
     }
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrentDiskUtil.class);
-    
+
     static final int RETRY_COUNT = 10;
-    
+
     /**
      * ms.
      */

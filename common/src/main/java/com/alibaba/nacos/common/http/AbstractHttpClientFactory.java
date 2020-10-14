@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.alibaba.nacos.common.http;
 
@@ -36,18 +21,13 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-/**
- * AbstractHttpClientFactory Let the creator only specify the http client config.
- *
- * @author mai.jh
- */
 public abstract class AbstractHttpClientFactory implements HttpClientFactory {
-    
+
     @Override
     public NacosRestTemplate createNacosRestTemplate() {
         HttpClientConfig httpClientConfig = buildHttpClientConfig();
         final JdkHttpClientRequest clientRequest = new JdkHttpClientRequest(httpClientConfig);
-        
+
         // enable ssl
         initTls(new BiConsumer<SSLContext, HostnameVerifier>() {
             @Override
@@ -61,51 +41,48 @@ public abstract class AbstractHttpClientFactory implements HttpClientFactory {
                 clientRequest.setSSLContext(loadSSLContext());
             }
         });
-        
+
         return new NacosRestTemplate(assignLogger(), clientRequest);
     }
-    
+
     @Override
     public NacosAsyncRestTemplate createNacosAsyncRestTemplate() {
         final HttpClientConfig originalRequestConfig = buildHttpClientConfig();
         final RequestConfig requestConfig = getRequestConfig();
         return new NacosAsyncRestTemplate(assignLogger(), new DefaultAsyncHttpClientRequest(
-                HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig)
-                        .setMaxConnTotal(originalRequestConfig.getMaxConnTotal())
-                        .setMaxConnPerRoute(originalRequestConfig.getMaxConnPerRoute())
-                        .setUserAgent(originalRequestConfig.getUserAgent()).build()));
+            HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig)
+                .setMaxConnTotal(originalRequestConfig.getMaxConnTotal())
+                .setMaxConnPerRoute(originalRequestConfig.getMaxConnPerRoute())
+                .setUserAgent(originalRequestConfig.getUserAgent()).build()));
     }
-    
+
     protected RequestConfig getRequestConfig() {
         HttpClientConfig httpClientConfig = buildHttpClientConfig();
         return RequestConfig.custom().setConnectTimeout(httpClientConfig.getConTimeOutMillis())
-                .setSocketTimeout(httpClientConfig.getReadTimeOutMillis())
-                .setConnectionRequestTimeout(httpClientConfig.getConnectionRequestTimeout())
-                .setMaxRedirects(httpClientConfig.getMaxRedirects()).build();
+            .setSocketTimeout(httpClientConfig.getReadTimeOutMillis())
+            .setConnectionRequestTimeout(httpClientConfig.getConnectionRequestTimeout())
+            .setMaxRedirects(httpClientConfig.getMaxRedirects()).build();
     }
-    
-    protected void initTls(BiConsumer<SSLContext, HostnameVerifier> initTlsBiFunc,
-            TlsFileWatcher.FileChangeListener tlsChangeListener) {
+
+    protected void initTls(BiConsumer<SSLContext, HostnameVerifier> initTlsBiFunc, TlsFileWatcher.FileChangeListener tlsChangeListener) {
         if (!TlsSystemConfig.tlsEnable) {
             return;
         }
-        
+
         final HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
         final SelfHostnameVerifier selfHostnameVerifier = new SelfHostnameVerifier(hv);
-        
+
         initTlsBiFunc.accept(loadSSLContext(), selfHostnameVerifier);
-        
+
         if (tlsChangeListener != null) {
             try {
-                TlsFileWatcher.getInstance()
-                        .addFileChangeListener(tlsChangeListener, TlsSystemConfig.tlsClientTrustCertPath,
-                                TlsSystemConfig.tlsClientKeyPath);
+                TlsFileWatcher.getInstance().addFileChangeListener(tlsChangeListener, TlsSystemConfig.tlsClientTrustCertPath, TlsSystemConfig.tlsClientKeyPath);
             } catch (IOException e) {
                 assignLogger().error("add tls file listener fail", e);
             }
         }
     }
-    
+
     @SuppressWarnings("checkstyle:abbreviationaswordinname")
     protected synchronized SSLContext loadSSLContext() {
         if (!TlsSystemConfig.tlsEnable) {
@@ -120,18 +97,8 @@ public abstract class AbstractHttpClientFactory implements HttpClientFactory {
         }
         return null;
     }
-    
-    /**
-     * build http client config.
-     *
-     * @return HttpClientConfig
-     */
+
     protected abstract HttpClientConfig buildHttpClientConfig();
-    
-    /**
-     * assign Logger.
-     *
-     * @return Logger
-     */
+
     protected abstract Logger assignLogger();
 }

@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.alibaba.nacos.test.common;
 
@@ -32,15 +17,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
- */
 public class HttpUtils_ITCase {
 
 	String exceptUrl = "http://127.0.0.1:8080/v1/api/test";
 
-	private ArrayList<Integer> list = new ArrayList<Integer>(
-			Arrays.asList(1, 2, 3, 4, 5, 6));
+	private ArrayList<Integer> list = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6));
 
 	@Test
 	public void test_deserialization_type() throws Exception {
@@ -62,7 +43,6 @@ public class HttpUtils_ITCase {
 		ArrayList<Integer> tmp = ResponseHandler.convert(json, ClassUtils.resolveGenericType(new GenericType<List<Integer>>(){}.getClass()));
 		Assert.assertEquals(list, tmp);
 	}
-
 
 	@Test
 	public void test_query_str() throws Exception {
@@ -103,5 +83,4 @@ public class HttpUtils_ITCase {
 		String targetUrl = HttpUtils.buildUrl(false, "127.0.0.1:8080", "/v1", "/api//", "test");
 		Assert.assertNotEquals(exceptUrl, targetUrl);
 	}
-
 }

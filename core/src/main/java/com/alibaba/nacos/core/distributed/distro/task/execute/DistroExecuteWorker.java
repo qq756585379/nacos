@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.alibaba.nacos.core.distributed.distro.task.execute;
 
@@ -28,21 +13,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Distro execute worker.
- *
- * @author xiweng.yy
- */
 public final class DistroExecuteWorker implements Closeable {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DistroExecuteWorker.class);
-    
+
     private static final int QUEUE_CAPACITY = 50000;
-    
+
     private final BlockingQueue<Runnable> queue;
-    
+
     private final String name;
-    
+
     private final AtomicBoolean closed;
 
     public DistroExecuteWorker(final int mod, final int total) {
@@ -79,29 +59,28 @@ public final class DistroExecuteWorker implements Closeable {
             LOGGER.error(ire.toString(), ire);
         }
     }
-    
+
     public int pendingTaskCount() {
         return queue.size();
     }
-    
+
     /**
      * Worker status.
      */
     public String status() {
         return name + ", pending tasks: " + pendingTaskCount();
     }
-    
+
     @Override
     public void shutdown() throws NacosException {
         queue.clear();
         closed.compareAndSet(false, true);
     }
-    
+
     /**
      * Inner execute worker.
      */
     private class InnerWorker extends Thread {
-
         InnerWorker(String name) {
             setDaemon(false);
             setName(name);

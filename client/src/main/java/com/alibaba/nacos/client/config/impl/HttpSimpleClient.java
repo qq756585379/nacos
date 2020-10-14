@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.alibaba.nacos.client.config.impl;
 
@@ -36,39 +21,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Http tool.
- *
- * @author Nacos
- * @deprecated Use NacosRestTemplate{@link NacosRestTemplate} unified http client
- */
 @Deprecated
 public class HttpSimpleClient {
-    
-    /**
-     * Get method.
-     *
-     * @param url           url
-     * @param headers       headers
-     * @param paramValues   paramValues
-     * @param encoding      encoding
-     * @param readTimeoutMs readTimeoutMs
-     * @param isSsl         isSsl
-     * @return result
-     * @throws IOException io exception
-     */
-    public static HttpResult httpGet(String url, List<String> headers, List<String> paramValues, String encoding,
-            long readTimeoutMs, boolean isSsl) throws IOException {
+
+    public static HttpResult httpGet(String url, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs, boolean isSsl) throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
         url += (null == encodedContent) ? "" : ("?" + encodedContent);
-        if (Limiter
-                .isLimit(MD5Utils.md5Hex(new StringBuilder(url).append(encodedContent).toString(), Constants.ENCODE))) {
-            return new HttpResult(NacosException.CLIENT_OVER_THRESHOLD,
-                    "More than client-side current limit threshold");
+        if (Limiter.isLimit(MD5Utils.md5Hex(new StringBuilder(url).append(encodedContent).toString(), Constants.ENCODE))) {
+            return new HttpResult(NacosException.CLIENT_OVER_THRESHOLD, "More than client-side current limit threshold");
         }
-        
+
         HttpURLConnection conn = null;
-        
+
         try {
             conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setRequestMethod("GET");
@@ -76,12 +40,12 @@ public class HttpSimpleClient {
             conn.setReadTimeout((int) readTimeoutMs);
             List<String> newHeaders = getHeaders(url, headers, paramValues);
             setHeaders(conn, newHeaders, encoding);
-            
+
             conn.connect();
-            
+
             int respCode = conn.getResponseCode();
             String resp = null;
-            
+
             if (HttpURLConnection.HTTP_OK == respCode) {
                 resp = IoUtils.toString(conn.getInputStream(), encoding);
             } else {
@@ -92,15 +56,14 @@ public class HttpSimpleClient {
             IoUtils.closeQuietly(conn);
         }
     }
-    
+
     /**
      * 发送GET请求.
      */
-    public static HttpResult httpGet(String url, List<String> headers, List<String> paramValues, String encoding,
-            long readTimeoutMs) throws IOException {
+    public static HttpResult httpGet(String url, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs) throws IOException {
         return httpGet(url, headers, paramValues, encoding, readTimeoutMs, false);
     }
-    
+
     /**
      * 发送POST请求.
      *
@@ -113,14 +76,11 @@ public class HttpSimpleClient {
      * @return result
      * @throws IOException io exception
      */
-    public static HttpResult httpPost(String url, List<String> headers, List<String> paramValues, String encoding,
-            long readTimeoutMs, boolean isSsl) throws IOException {
+    public static HttpResult httpPost(String url, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs, boolean isSsl) throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
         encodedContent = (null == encodedContent) ? "" : encodedContent;
-        if (Limiter
-                .isLimit(MD5Utils.md5Hex(new StringBuilder(url).append(encodedContent).toString(), Constants.ENCODE))) {
-            return new HttpResult(NacosException.CLIENT_OVER_THRESHOLD,
-                    "More than client-side current limit threshold");
+        if (Limiter.isLimit(MD5Utils.md5Hex(new StringBuilder(url).append(encodedContent).toString(), Constants.ENCODE))) {
+            return new HttpResult(NacosException.CLIENT_OVER_THRESHOLD, "More than client-side current limit threshold");
         }
         HttpURLConnection conn = null;
         try {
@@ -132,12 +92,12 @@ public class HttpSimpleClient {
             conn.setDoInput(true);
             List<String> newHeaders = getHeaders(url, headers, paramValues);
             setHeaders(conn, newHeaders, encoding);
-            
+
             conn.getOutputStream().write(encodedContent.getBytes(encoding));
-            
+
             int respCode = conn.getResponseCode();
-            String resp = null;
-            
+
+            String resp;
             if (HttpURLConnection.HTTP_OK == respCode) {
                 resp = IoUtils.toString(conn.getInputStream(), encoding);
             } else {
@@ -148,7 +108,7 @@ public class HttpSimpleClient {
             IoUtils.closeQuietly(conn);
         }
     }
-    
+
     /**
      * 发送POST请求.
      *
@@ -160,11 +120,10 @@ public class HttpSimpleClient {
      * @return result
      * @throws IOException io exception
      */
-    public static HttpResult httpPost(String url, List<String> headers, List<String> paramValues, String encoding,
-            long readTimeoutMs) throws IOException {
+    public static HttpResult httpPost(String url, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs) throws IOException {
         return httpPost(url, headers, paramValues, encoding, readTimeoutMs, false);
     }
-    
+
     /**
      * Delete method.
      *
@@ -178,17 +137,15 @@ public class HttpSimpleClient {
      * @throws IOException io exception
      */
     public static HttpResult httpDelete(String url, List<String> headers, List<String> paramValues, String encoding,
-            long readTimeoutMs, boolean isSsl) throws IOException {
+                                        long readTimeoutMs, boolean isSsl) throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
         url += (null == encodedContent) ? "" : ("?" + encodedContent);
-        if (Limiter
-                .isLimit(MD5Utils.md5Hex(new StringBuilder(url).append(encodedContent).toString(), Constants.ENCODE))) {
-            return new HttpResult(NacosException.CLIENT_OVER_THRESHOLD,
-                    "More than client-side current limit threshold");
+        if (Limiter.isLimit(MD5Utils.md5Hex(new StringBuilder(url).append(encodedContent).toString(), Constants.ENCODE))) {
+            return new HttpResult(NacosException.CLIENT_OVER_THRESHOLD, "More than client-side current limit threshold");
         }
-        
+
         HttpURLConnection conn = null;
-        
+
         try {
             conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setRequestMethod("DELETE");
@@ -196,12 +153,12 @@ public class HttpSimpleClient {
             conn.setReadTimeout((int) readTimeoutMs);
             List<String> newHeaders = getHeaders(url, headers, paramValues);
             setHeaders(conn, newHeaders, encoding);
-            
+
             conn.connect();
-            
+
             int respCode = conn.getResponseCode();
             String resp = null;
-            
+
             if (HttpURLConnection.HTTP_OK == respCode) {
                 resp = IoUtils.toString(conn.getInputStream(), encoding);
             } else {
@@ -212,7 +169,7 @@ public class HttpSimpleClient {
             IoUtils.closeQuietly(conn);
         }
     }
-    
+
     /**
      * Delete method.
      *
@@ -224,11 +181,10 @@ public class HttpSimpleClient {
      * @return result
      * @throws IOException io exception
      */
-    public static HttpResult httpDelete(String url, List<String> headers, List<String> paramValues, String encoding,
-            long readTimeoutMs) throws IOException {
+    public static HttpResult httpDelete(String url, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs) throws IOException {
         return httpGet(url, headers, paramValues, encoding, readTimeoutMs, false);
     }
-    
+
     private static void setHeaders(HttpURLConnection conn, List<String> headers, String encoding) {
         if (null != headers) {
             for (Iterator<String> iter = headers.iterator(); iter.hasNext(); ) {
@@ -237,17 +193,16 @@ public class HttpSimpleClient {
         }
         conn.addRequestProperty(HttpHeaderConsts.CLIENT_VERSION_HEADER, VersionUtils.version);
         conn.addRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=" + encoding);
-        
+
         String ts = String.valueOf(System.currentTimeMillis());
         String token = MD5Utils.md5Hex(ts + ParamUtil.getAppKey(), Constants.ENCODE);
-        
+
         conn.addRequestProperty(Constants.CLIENT_APPNAME_HEADER, ParamUtil.getAppName());
         conn.addRequestProperty(Constants.CLIENT_REQUEST_TS_HEADER, ts);
         conn.addRequestProperty(Constants.CLIENT_REQUEST_TOKEN_HEADER, token);
     }
-    
-    private static List<String> getHeaders(String url, List<String> headers, List<String> paramValues)
-            throws IOException {
+
+    private static List<String> getHeaders(String url, List<String> headers, List<String> paramValues) {
         List<String> newHeaders = new ArrayList<String>();
         newHeaders.add("exConfigInfo");
         newHeaders.add("true");
@@ -258,14 +213,14 @@ public class HttpSimpleClient {
         }
         return newHeaders;
     }
-    
+
     private static String encodingParams(List<String> paramValues, String encoding)
-            throws UnsupportedEncodingException {
+        throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         if (null == paramValues) {
             return null;
         }
-        
+
         for (Iterator<String> iter = paramValues.iterator(); iter.hasNext(); ) {
             sb.append(iter.next()).append("=");
             sb.append(URLEncoder.encode(iter.next(), encoding));
@@ -275,31 +230,31 @@ public class HttpSimpleClient {
         }
         return sb.toString();
     }
-    
+
     public static class HttpResult {
-        
+
         public final int code;
-        
+
         public final Map<String, List<String>> headers;
-        
+
         public final String content;
-        
+
         public HttpResult(int code, String content) {
             this.code = code;
             this.headers = null;
             this.content = content;
         }
-        
+
         public HttpResult(int code, Map<String, List<String>> headers, String content) {
             this.code = code;
             this.headers = headers;
             this.content = content;
         }
-        
+
         @Override
         public String toString() {
             return "HttpResult{" + "code=" + code + ", headers=" + headers + ", content='" + content + '\'' + '}';
         }
     }
-    
+
 }

@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.alibaba.nacos.auth.common.env;
 
@@ -27,28 +12,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/**
- * Reload application.properties.
- *
- * @author nkorange
- * @author mai.jh
- * @since 1.2.0
- */
 @Component
 public class ReloadableConfigs {
-    
+
     private static final String FILE_PREFIX = "file:";
-    
+
     private Properties properties;
-    
+
     @Value("${spring.config.location:}")
     private String path;
-    
-    /**
-     * Periodically load configuration file information.
-     *
-     * @throws IOException IOException
-     */
+
     @Scheduled(fixedRate = 5000)
     public void reload() throws IOException {
         final Properties properties = new Properties();
@@ -68,7 +41,7 @@ public class ReloadableConfigs {
         inputStream.close();
         this.properties = properties;
     }
-    
+
     public final Properties getProperties() {
         return properties;
     }
