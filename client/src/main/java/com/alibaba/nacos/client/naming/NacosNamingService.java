@@ -372,8 +372,7 @@ public class NacosNamingService implements NamingService {
 
     @Override
     public void subscribe(String serviceName, String groupName, List<String> clusters, EventListener listener) {
-        eventDispatcher.addListener(hostReactor.getServiceInfo(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ",")),
-                StringUtils.join(clusters, ","), listener);
+        eventDispatcher.addListener(hostReactor.getServiceInfo(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ",")), StringUtils.join(clusters, ","), listener);
     }
 
     @Override

@@ -20,8 +20,7 @@ public class GlobalExecutor {
             new NameThreadFactory("com.alibaba.nacos.core.common"));
 
     private static final ScheduledExecutorService DISTRO_EXECUTOR = ExecutorFactory.Managed
-        .newScheduledExecutorService(ClassUtils.getCanonicalName(GlobalExecutor.class),
-            Runtime.getRuntime().availableProcessors() * 2,
+        .newScheduledExecutorService(ClassUtils.getCanonicalName(GlobalExecutor.class), Runtime.getRuntime().availableProcessors() * 2,
             new NameThreadFactory("com.alibaba.nacos.core.protocal.distro"));
 
     public static void runWithoutThread(Runnable runnable) {

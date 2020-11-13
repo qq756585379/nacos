@@ -69,8 +69,7 @@ public class ServerHttpAgent implements HttpAgent {
                     newHeaders.addAll(headers);
                 }
                 Query query = Query.newInstance().initParams(paramValues);
-                HttpRestResult<String> result = NACOS_RESTTEMPLATE
-                    .get(getUrl(currentServerAddr, path), httpConfig, newHeaders, query, String.class);
+                HttpRestResult<String> result = NACOS_RESTTEMPLATE.get(getUrl(currentServerAddr, path), httpConfig, newHeaders, query, String.class);
                 if (isFail(result)) {
                     LOGGER.error("[NACOS ConnectException] currentServerAddr: {}, httpCode: {}", serverListMgr.getCurrentServerAddr(), result.getCode());
                 } else {
@@ -196,7 +195,6 @@ public class ServerHttpAgent implements HttpAgent {
                 }
                 serverListMgr.refreshCurrentServerAddr();
             }
-
         } while (System.currentTimeMillis() <= endTime);
 
         LOGGER.error("no available server");
@@ -252,7 +250,6 @@ public class ServerHttpAgent implements HttpAgent {
                 securityProxy.login(serverListMgr.getServerUrls());
             }
         }, 0, securityInfoRefreshIntervalMills, TimeUnit.MILLISECONDS);
-
     }
 
     private void injectSecurityInfo(Map<String, String> params) {
@@ -273,7 +270,7 @@ public class ServerHttpAgent implements HttpAgent {
     private void initEncode(Properties properties) {
         encode = TemplateUtils.stringEmptyAndThenExecute(properties.getProperty(PropertyKeyConst.ENCODE), new Callable<String>() {
             @Override
-            public String call() throws Exception {
+            public String call() {
                 return Constants.ENCODE;
             }
         });

@@ -43,9 +43,9 @@ public class InetUtils {
 
     private static boolean preferHostnameOverIp = false;
 
-    private static List<String> preferredNetworks = new ArrayList<String>();
+    private static List<String> preferredNetworks = new ArrayList<>();
 
-    private static List<String> ignoredInterfaces = new ArrayList<String>();
+    private static List<String> ignoredInterfaces = new ArrayList<>();
 
     static {
         NotifyCenter.registerToSharePublisher(IPChangeEvent.class);

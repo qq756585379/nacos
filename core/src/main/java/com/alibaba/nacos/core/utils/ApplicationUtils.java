@@ -136,8 +136,7 @@ public class ApplicationUtils implements ApplicationContextInitializer<Configura
         return applicationContext.getBeansOfType(type);
     }
 
-    public static <T> Map<String, T> getBeansOfType(Class<T> type, boolean includeNonSingletons, boolean allowEagerInit)
-        throws BeansException {
+    public static <T> Map<String, T> getBeansOfType(Class<T> type, boolean includeNonSingletons, boolean allowEagerInit) throws BeansException {
         return applicationContext.getBeansOfType(type, includeNonSingletons, allowEagerInit);
     }
 
@@ -145,13 +144,11 @@ public class ApplicationUtils implements ApplicationContextInitializer<Configura
         return applicationContext.getBeanNamesForAnnotation(annotationType);
     }
 
-    public static Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType)
-        throws BeansException {
+    public static Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) throws BeansException {
         return applicationContext.getBeansWithAnnotation(annotationType);
     }
 
-    public static <A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType)
-        throws NoSuchBeanDefinitionException {
+    public static <A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType) throws NoSuchBeanDefinitionException {
         return applicationContext.findAnnotationOnBean(beanName, annotationType);
     }
 

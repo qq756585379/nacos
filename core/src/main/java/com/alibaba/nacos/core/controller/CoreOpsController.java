@@ -3,9 +3,9 @@ package com.alibaba.nacos.core.controller;
 
 import com.alibaba.nacos.common.model.RestResult;
 import com.alibaba.nacos.common.model.RestResultUtils;
+import com.alibaba.nacos.consistency.IdGenerator;
 import com.alibaba.nacos.core.distributed.ProtocolManager;
 import com.alibaba.nacos.core.distributed.id.IdGeneratorManager;
-import com.alibaba.nacos.core.utils.Commons;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping(Commons.NACOS_CORE_CONTEXT + "/ops")
+@RequestMapping("/v1/core/ops")
 public class CoreOpsController {
 
     private final ProtocolManager protocolManager;
@@ -40,15 +40,11 @@ public class CoreOpsController {
         return protocolManager.getCpProtocol().execute(commands);
     }
 
-    /**
-     * Gets the current health of the ID generator.
-     *
-     * @return {@link RestResult}
-     */
     @GetMapping(value = "/idInfo")
     public RestResult<Map<String, Map<Object, Object>>> idInfo() {
         Map<String, Map<Object, Object>> info = new HashMap<>(10);
-        idGeneratorManager.getGeneratorMap().forEach((resource, idGenerator) -> info.put(resource, idGenerator.info()));
+        Map<String, IdGenerator> map = idGeneratorManager.getGeneratorMap();
+        map.forEach((s, idGenerator) -> info.put(s, idGenerator.info()));
         return RestResultUtils.success(info);
     }
 }

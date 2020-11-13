@@ -109,7 +109,7 @@ public final class DiskUtils {
         }
     }
 
-    public static byte[] readFileBytes(File file) {
+    private static byte[] readFileBytes(File file) {
         if (file.exists()) {
             String result = readFile(file);
             if (result != null) {
@@ -222,15 +222,6 @@ public final class DiskUtils {
 
     // copy from sofa-jraft
 
-    /**
-     * Compress a folder in a directory.
-     *
-     * @param rootDir    directory
-     * @param sourceDir  folder
-     * @param outputFile output file
-     * @param checksum   checksum
-     * @throws IOException IOException
-     */
     public static void compress(final String rootDir, final String sourceDir, final String outputFile, final Checksum checksum) throws IOException {
         try (final FileOutputStream fos = new FileOutputStream(outputFile);
              final CheckedOutputStream cos = new CheckedOutputStream(fos, checksum);
@@ -287,36 +278,6 @@ public final class DiskUtils {
         }
     }
 
-    /**
-     * Returns an Iterator for the lines in a <code>File</code>.
-     * <p>
-     * This method opens an <code>InputStream</code> for the file. When you have finished with the iterator you should
-     * close the stream to free internal resources. This can be done by calling the {@link
-     * org.apache.commons.io.LineIterator#close()} or {@link org.apache.commons.io.LineIterator#closeQuietly(org.apache.commons.io.LineIterator)}
-     * method.
-     * </p>
-     * The recommended usage pattern is:
-     * <pre>
-     * LineIterator it = FileUtils.lineIterator(file, "UTF-8");
-     * try {
-     *   while (it.hasNext()) {
-     *     String line = it.nextLine();
-     *     /// do something with line
-     *   }
-     * } finally {
-     *   LineIterator.closeQuietly(iterator);
-     * }
-     * </pre>
-     * <p>
-     * If an exception occurs during the creation of the iterator, the underlying stream is closed.
-     * </p>
-     *
-     * @param file     the file to open for input, must not be <code>null</code>
-     * @param encoding the encoding to use, <code>null</code> means platform default
-     * @return an Iterator of the lines in the file, never <code>null</code>
-     * @throws IOException in case of an I/O error (file closed)
-     * @since 1.2
-     */
     public static LineIterator lineIterator(File file, String encoding) throws IOException {
         return new LineIterator(FileUtils.lineIterator(file, encoding));
     }
